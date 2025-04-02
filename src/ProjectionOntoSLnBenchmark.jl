@@ -4,22 +4,24 @@ using ProjectionOntoSLn
 
 using Plots: plot, plot!, xlabel!, ylabel!, savefig
 using StatsPlots
-using BenchmarkTools: @belapsed
 using LaTeXStrings
 using Random: shuffle, seed!
 using StaticArrays: SVector
 using JLD2: save, jldopen
-
 using LinearAlgebra: svd, norm, Diagonal
 
-# set these benchmark parameters to avoid expensive tuning of each single benchmark run
 import BenchmarkTools
-BenchmarkTools.DEFAULT_PARAMETERS.samples = 50
-BenchmarkTools.DEFAULT_PARAMETERS.evals = 1
-BenchmarkTools.DEFAULT_PARAMETERS.evals_set = true
-BenchmarkTools.DEFAULT_PARAMETERS.seconds = Inf
-# this removes very expensive garbage collections before each benchmark run (we do not need it)
-BenchmarkTools.DEFAULT_PARAMETERS.gctrial = false
+
+function tune_benchmark()
+    # set these benchmark parameters to avoid expensive tuning of each single benchmark run
+    BenchmarkTools.DEFAULT_PARAMETERS.samples = 50
+    BenchmarkTools.DEFAULT_PARAMETERS.evals = 1
+    BenchmarkTools.DEFAULT_PARAMETERS.evals_set = true
+    BenchmarkTools.DEFAULT_PARAMETERS.seconds = Inf
+    # this removes very expensive garbage collections before each benchmark run (we do not need it)
+    BenchmarkTools.DEFAULT_PARAMETERS.gctrial = false
+    return nothing
+end
 
 function do_run(a, p, walltimes, iterations; stop_on_error, kwargs...)
 
@@ -38,8 +40,10 @@ function do_run(a, p, walltimes, iterations; stop_on_error, kwargs...)
 
     for key in keys(methods)
         try
+            tune_benchmark()
+
             # @elapsed needs explicitly interpolated kwargs....
-            time = @belapsed project_onto_sln($(methods[key]), $a; tolerance = $(kwargs[:tolerance]), debug = $(kwargs[:debug]), maxIter = $(kwargs[:maxIter]))
+            time = BenchmarkTools.@belapsed project_onto_sln($(methods[key]), $a; tolerance = $(kwargs[:tolerance]), debug = $(kwargs[:debug]), maxIter = $(kwargs[:maxIter]))
             result = project_onto_sln(methods[key], a; kwargs...)
             p[key] = result.projection
             walltime[key] = time
@@ -148,11 +152,13 @@ function runBenchmark(; dim, samples, mode, kwargs...)
             A = generateRandomMatrix(n; diag_only = true, kwargs...)
         end
 
+        tune_benchmark()
+
         # svd
-        timeSVD = @belapsed svd($A)
+        timeSVD = BenchmarkTools.@belapsed svd($A)
         U, a, V = svd(A)
 
-        timeProduct = @belapsed $U * Diagonal($a) * $V'
+        timeProduct = BenchmarkTools.@belapsed $U * Diagonal($a) * $V'
 
         time = timeSVD + timeProduct
 
@@ -473,7 +479,7 @@ function main(;
         random_seed = 12345
     )
 
-    return @time ProjectionOntoSLnBenchmark.do_everything(;
+    return ProjectionOntoSLnBenchmark.do_everything(;
         dims,
         samples,
         tolerance,

@@ -2,7 +2,7 @@
 
 julia_version = "1.11.4"
 manifest_format = "2.0"
-project_hash = "9fa065105dbcd5d24d90ec6ced8194e2e45aab76"
+project_hash = "4a5bb536ee25fe94e3c7f2b25f358c9872cefc2e"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -869,7 +869,9 @@ version = "1.11.0"
 
 [[deps.ProjectionOntoSLn]]
 deps = ["Distributions", "ForwardDiff", "LinearAlgebra", "StaticArrays"]
-path = "/home/patrick/git-stuff/julia/ProjectionOntoSLn"
+git-tree-sha1 = "ef4f6906ee72792befba0c57f52db1d9e755c6c4"
+repo-rev = "main"
+repo-url = "https://github.com/pjaap/ProjectionOntoSLn.jl"
 uuid = "4121a27e-c3cd-420c-928d-9730d80fd3cb"
 version = "1.0.0"
 
