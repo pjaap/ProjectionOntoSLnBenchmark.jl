@@ -9,6 +9,7 @@ using Random: shuffle, seed!
 using StaticArrays: SVector
 using JLD2: save, jldopen
 using LinearAlgebra: svd, norm, Diagonal
+using DrWatson: projectdir
 
 import BenchmarkTools
 
@@ -299,9 +300,6 @@ function makePlots(walltimes, determinants::AbstractArray, iterations; dims, max
         :un => "Newton (eliminated)",
     )
 
-    # get the current path of this file for correct location of images
-    current_path = @__DIR__
-
     min_wt, max_wt, avg_wt = compute_min_max_average(walltimes)
 
     # a small portion of the dims for the O(n) graphs
@@ -357,7 +355,7 @@ function makePlots(walltimes, determinants::AbstractArray, iterations; dims, max
     xlabel!(pp, L"n")
     ylabel!(pp, "wall-time [s]")
 
-    savefig(pp, joinpath(current_path, "../gfx/walltimes_$mode.pdf"))
+    savefig(pp, projectdir("gfx","walltimes_$mode.pdf"))
 
     # det plots only for boundary
     if mode == :boundary
@@ -382,7 +380,7 @@ function makePlots(walltimes, determinants::AbstractArray, iterations; dims, max
         xlabel!(pp, "determinant")
         ylabel!(pp, "relative frequency")
 
-        savefig(pp, joinpath(current_path, "../gfx/determinants_$mode.pdf"))
+        savefig(pp, projectdir("gfx","determinants_$mode.pdf"))
     end
 
     # plot average iterations
@@ -413,7 +411,7 @@ function makePlots(walltimes, determinants::AbstractArray, iterations; dims, max
     xlabel!(pp, L"n")
     ylabel!(pp, "number of iterations")
 
-    savefig(pp, joinpath(current_path, "../gfx/iterations_$mode.pdf"))
+    savefig(pp, projectdir("gfx","iterations_$mode.pdf"))
 
     return nothing
 
@@ -433,12 +431,12 @@ end
 function do_everything(; random_seed, kwargs...)
 
     # remove log files
-    rm("total_runs.log", force = true)
-    rm("non_convergence.log", force = true)
+    rm(projectdir("total_runs.log"), force = true)
+    rm(projectdir("non_convergence.log"), force = true)
 
     # create gfx folder if not already present
-    if !isdir("../gfx")
-        mkdir("../gfx")
+    if !isdir(projectdir("gfx"))
+        mkdir(projectdir("gfx"))
     end
 
     # this makes the rand() calls a bit more reproducible
@@ -450,7 +448,7 @@ function do_everything(; random_seed, kwargs...)
         results[mode] = runBenchmarksAndPlot(; mode, kwargs...)
     end
 
-    save("Benchmark_results.jld2", "results", results, "random_seed", random_seed, "kwargs", kwargs)
+    save(projectdir("gfx","Benchmark_results.jld2"), "results", results, "random_seed", random_seed, "kwargs", kwargs)
 
     return results
 end
