@@ -2,6 +2,7 @@ module PlotSlowConvergenceOfCS
 
     using Plots
     using LaTeXStrings
+    using DrWatson: projectdir
 
     function main()
 
@@ -22,8 +23,7 @@ module PlotSlowConvergenceOfCS
         # p⁰
         scatter!(pp, [pk_matrix[1,1]],[pk_matrix[1,2]], mark = :circle, markersize=4, label = L"initial iterate $p^0$")
 
-        current_path = @__DIR__
-        return savefig(pp, current_path * "/../../gfx/cs_slow_convergence.pdf")
+        return savefig(pp, projectdir("gfx", "cs_slow_convergence.pdf"))
 
     end
 
