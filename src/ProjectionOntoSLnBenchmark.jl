@@ -329,10 +329,22 @@ function makePlots(walltimes, determinants::AbstractArray, iterations; dims, max
         avg_matrix[i, j] = avg_wt[i][symbol]
     end
 
-    pp = groupedbar(dim_string, max_matrix, fillto = min_matrix, bar_width = bar_width, label = [labels[s] for s in symbols], yscale = :log10, legend = :topleft)
+    # we need to modify the labels to add a star for root finding
+    labels_walltimes = deepcopy(labels)
+    if mode ∈ [:convex, :singular]
+        labels_walltimes[:rf] = "★ $(labels[:rf])"
+    end
+
+    pp = groupedbar(dim_string, max_matrix, fillto = min_matrix, bar_width = bar_width, label = [labels_walltimes[s] for s in symbols], yscale = :log10, legend = :topleft)
 
     # plot small avg bars
     groupedbar!(pp, dim_string, avg_matrix .* 1.02, fillto = avg_matrix .* 0.98, bar_width = bar_width, label = nothing, color = :black)
+
+    if mode ∈ [:convex, :singular]
+        # add star for root finding
+        rf_max = [  max_wt[i][:rf] for i in 1:N ]
+        scatter!(pp, (1.0:length(dims)) .- 0.77, rf_max .* 1.3 , label = nothing, marker = :star, color = :black)
+    end
 
     # plot average SVD time
     avg_svd_wt = [ avg_wt[i][:svd] for i in 1:N ]
@@ -355,7 +367,7 @@ function makePlots(walltimes, determinants::AbstractArray, iterations; dims, max
     xlabel!(pp, L"n")
     ylabel!(pp, "wall-time [s]")
 
-    savefig(pp, projectdir("gfx","walltimes_$mode.pdf"))
+    savefig(pp, projectdir("gfx", "walltimes_$mode.pdf"))
 
     # det plots only for boundary
     if mode == :boundary
@@ -380,7 +392,7 @@ function makePlots(walltimes, determinants::AbstractArray, iterations; dims, max
         xlabel!(pp, "determinant")
         ylabel!(pp, "relative frequency")
 
-        savefig(pp, projectdir("gfx","determinants_$mode.pdf"))
+        savefig(pp, projectdir("gfx", "determinants_$mode.pdf"))
     end
 
     # plot average iterations
@@ -401,17 +413,28 @@ function makePlots(walltimes, determinants::AbstractArray, iterations; dims, max
         avg_matrix[i, j] = avg_it[i][symbol]
     end
 
-    pp = groupedbar(dim_string, max_matrix, fillto = min_matrix, bar_width = bar_width, label = [labels[s] for s in symbols])
+    # we need to modify the labels to add a star for root finding
+    labels_iterations = deepcopy(labels)
+    if mode ∈ [:convex, :singular]
+        labels_iterations[:rf] = "★ $(labels[:rf])"
+    end
+    pp = groupedbar(dim_string, max_matrix, fillto = min_matrix, bar_width = bar_width, label = [labels_iterations[s] for s in symbols])
 
     # plot small avg bars
     groupedbar!(pp, dim_string, avg_matrix .+ 0.2, fillto = avg_matrix .- 0.2, bar_width = bar_width, label = nothing, color = :black)
+
+    if mode ∈ [:convex, :singular]
+        # add star for root finding
+        rf_means = [  avg_it[i][:rf] for i in 1:N ]
+        scatter!(pp, (1.0:length(dims)) .- 0.77, rf_means .+ 4, label = nothing, marker = :star, color = :black)
+    end
 
     ylims!(pp, 0, maxIter)
 
     xlabel!(pp, L"n")
     ylabel!(pp, "number of iterations")
 
-    savefig(pp, projectdir("gfx","iterations_$mode.pdf"))
+    savefig(pp, projectdir("gfx", "iterations_$mode.pdf"))
 
     return nothing
 
@@ -448,7 +471,7 @@ function do_everything(; random_seed, kwargs...)
         results[mode] = runBenchmarksAndPlot(; mode, kwargs...)
     end
 
-    save(projectdir("gfx","Benchmark_results.jld2"), "results", results, "random_seed", random_seed, "kwargs", kwargs)
+    save(projectdir("gfx", "Benchmark_results.jld2"), "results", results, "random_seed", random_seed, "kwargs", kwargs)
 
     return results
 end
