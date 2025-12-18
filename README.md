@@ -8,7 +8,9 @@ This packages also generates the images used in the paper.
 
 ## Usage
 
-To reproduce the results from the paper, you will need a Julia installation with version ≥ 1.11.0
+To reproduce the results from the paper, you will need a Julia installation with version = 1.11.4
+
+(for versions > 1.11, reproducibility is not guaranteed; please remove the `Manifest.toml` in that case)
 
 1. Clone this repo
 ```
